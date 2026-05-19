@@ -8,9 +8,10 @@ export type DesktopClientStatus = "connected" | "not_connected";
 export type RemoteCommand =
   | "NEXT_SLIDE"
   | "PREV_SLIDE"
-  | "BLACKOUT"
   | "START_PRESENTATION"
-  | "END_PRESENTATION";
+  | "END_PRESENTATION"
+  | "BLACKOUT"
+  | "WHITEOUT";
 
 // User type
 export interface User {
@@ -37,20 +38,28 @@ export interface LogEntry {
   command: RemoteCommand;
 }
 
+// Operation log item type
+export type OperationLogItem = {
+  timestamp: string;
+  command: RemoteCommand;
+};
+
 // Command display mapping
 export const COMMAND_LABELS: Record<RemoteCommand, string> = {
   NEXT_SLIDE: "Next Slide",
   PREV_SLIDE: "Previous Slide",
-  BLACKOUT: "Black Screen",
   START_PRESENTATION: "Start Presentation",
   END_PRESENTATION: "End Presentation",
+  BLACKOUT: "Black Screen",
+  WHITEOUT: "White Screen",
 };
 
-// Command display mapping (Japanese)
+// Command display mapping Japanese
 export const COMMAND_LABELS_JA: Record<RemoteCommand, string> = {
   NEXT_SLIDE: "次へ",
   PREV_SLIDE: "戻る",
-  BLACKOUT: "黒画面",
   START_PRESENTATION: "発表開始",
   END_PRESENTATION: "発表終了",
+  BLACKOUT: "黒画面",
+  WHITEOUT: "白画面",
 };
