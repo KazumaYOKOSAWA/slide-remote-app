@@ -12,7 +12,6 @@ import {
 export default function LoginPage() {
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      {/* Header */}
       <header className="border-b border-border bg-background/80 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-4">
           <Link href="/" className="flex items-center gap-2">
@@ -45,18 +44,17 @@ export default function LoginPage() {
         </div>
       </header>
 
-      {/* Main Content */}
       <main className="flex flex-1 items-center justify-center px-4 py-10">
         <div className="w-full max-w-md space-y-6">
           <div className="text-center">
             <p className="text-sm font-medium text-primary">
-              PC側セッション作成
+              PCでセッションを作成
             </p>
             <h1 className="mt-2 text-2xl font-bold tracking-tight text-foreground">
               Googleでログイン
             </h1>
             <p className="mt-2 text-sm text-muted-foreground">
-              発表セッションを作成し、QRコードを表示するにはログインが必要です。
+              発表セッションを作成し、スマホ接続用のQRコードを表示できます。
             </p>
           </div>
 
@@ -66,13 +64,11 @@ export default function LoginPage() {
                 セッション管理を始める
               </CardTitle>
               <CardDescription>
-                ログイン後、PCで発表セッションを作成できます。
+                PCから発表セッションを作成・管理します。
               </CardDescription>
             </CardHeader>
 
             <CardContent className="space-y-6">
-              {/* Google Login Button */}
-              {/* TODO: Supabase Auth 実装後は、LinkではなくGoogle OAuthの関数を呼び出す */}
               <GoogleLoginButton />
 
               <div className="rounded-lg border border-border bg-muted/40 p-4">
@@ -94,11 +90,11 @@ export default function LoginPage() {
 
                   <div className="space-y-1">
                     <p className="text-sm font-medium text-foreground">
-                      MVPではログイン処理は仮実装です
+                      PCでの操作について
                     </p>
                     <p className="text-sm text-muted-foreground">
-                      現時点ではボタンを押すとダッシュボードへ進みます。
-                      Supabase Auth実装後にGoogleログインへ差し替えます。
+                      PowerPointを操作するには、ログイン後にセッションを作成し、
+                      PC側受信アプリを起動してください。
                     </p>
                   </div>
                 </div>
@@ -106,7 +102,6 @@ export default function LoginPage() {
             </CardContent>
           </Card>
 
-          {/* Mobile Connection Info */}
           <Card className="border-primary/20 bg-primary/5">
             <CardContent className="pt-6">
               <div className="flex items-start gap-3">
@@ -130,7 +125,7 @@ export default function LoginPage() {
                     スマホで接続する場合
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    スマホからQRコードを読み取る、または6桁コードを入力して接続する場合はログイン不要です。
+                    QRコードを読み取るか、6桁コードを入力して接続する場合はログイン不要です。
                   </p>
 
                   <Link href="/connect">
@@ -149,7 +144,11 @@ export default function LoginPage() {
 
           <div className="text-center">
             <Link href="/">
-              <Button variant="ghost" size="sm" className="text-muted-foreground">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-muted-foreground"
+              >
                 トップページに戻る
               </Button>
             </Link>
