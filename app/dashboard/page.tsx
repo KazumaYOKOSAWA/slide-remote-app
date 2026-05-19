@@ -353,7 +353,7 @@ export default async function DashboardPage() {
                 </CardContent>
               </Card>
 
-              <Card className="border-border">
+              {/* <Card className="border-border">
                 <CardHeader>
                   <CardTitle className="text-lg">MVPでできること</CardTitle>
                 </CardHeader>
@@ -366,7 +366,7 @@ export default async function DashboardPage() {
                     <li>・接続状態の確認</li>
                   </ul>
                 </CardContent>
-              </Card>
+              </Card> */}
             </aside>
           </div>
         </div>
