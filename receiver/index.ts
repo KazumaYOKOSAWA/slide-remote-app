@@ -4,10 +4,14 @@ import { keyboard, Key } from "@nut-tree-fork/nut-js";
 
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
-const sessionId = process.env.SESSION_ID;
+const pairingCode = process.argv[2];
 
-if (!supabaseUrl || !supabaseAnonKey || !sessionId) {
-  throw new Error("Missing SUPABASE_URL, SUPABASE_ANON_KEY, or SESSION_ID");
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error("Missing SUPABASE_URL or SUPABASE_ANON_KEY");
+}
+
+if (!pairingCode) {
+  throw new Error("Usage: npm run dev -- <pairing_code>");
 }
 
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
@@ -51,15 +55,39 @@ async function executeCommand(command: string) {
   }
 }
 
+async function findSessionByCode(code: string) {
+  const { data, error } = await supabase
+    .from("sessions")
+    .select("id, name, pairing_code, status")
+    .eq("pairing_code", code)
+    .single();
+
+  if (error || !data) {
+    console.error("session lookup error:", error);
+    throw new Error("Session not found. Check pairing code.");
+  }
+
+  if (data.status === "ended") {
+    throw new Error("This session has already ended.");
+  }
+
+  return data;
+}
+
 async function main() {
   console.log("Receiver started");
-  console.log("Supabase URL:", supabaseUrl);
+  console.log("Pairing code:", pairingCode);
+
+  const session = await findSessionByCode(pairingCode);
+  const sessionId = session.id as string;
+
+  console.log("Session:", session.name);
   console.log("Watching session:", sessionId);
 
-  // 既存commandsを読めるか確認
   const { data, error } = await supabase
     .from("commands")
     .select("id, session_id, command, created_at, executed_at")
+    .eq("session_id", sessionId)
     .order("created_at", { ascending: false })
     .limit(5);
 
@@ -67,7 +95,7 @@ async function main() {
   console.log("Initial fetch error:", error);
 
   supabase
-    .channel("commands-debug")
+    .channel(`commands:${sessionId}`)
     .on(
       "postgres_changes",
       {
@@ -76,22 +104,14 @@ async function main() {
         table: "commands",
       },
       async (payload) => {
-        console.log("Raw payload received:");
-        console.log(payload);
-
         const payloadSessionId = payload.new.session_id as string;
         const command = payload.new.command as string;
 
-        console.log("Payload session_id:", payloadSessionId);
-        console.log("Receiver session_id:", sessionId);
-        console.log("Command:", command);
-
         if (payloadSessionId !== sessionId) {
-          console.log("Ignored: session_id does not match");
           return;
         }
 
-        console.log("Matched command:", command);
+        console.log("Received command:", command);
 
         try {
           await executeCommand(command);
@@ -118,6 +138,6 @@ async function main() {
 }
 
 main().catch((error) => {
-  console.error("Receiver fatal error:", error);
+  console.error("Receiver fatal error:", error.message);
   process.exit(1);
 });

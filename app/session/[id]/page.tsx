@@ -20,6 +20,7 @@ import { QRCodePlaceholder } from "@/components/qr-code-placeholder";
 import { SessionCodeDisplay } from "@/components/session-code-display";
 import { createClient } from "@/lib/supabase/client";
 import type { RemoteCommand } from "@/lib/types";
+import { QRCodeDisplay } from "@/components/qr-code-display";
 
 type SessionRow = {
   id: string;
@@ -245,10 +246,11 @@ export default function SessionPage() {
                   </div>
 
                   <div className="text-center">
-                    <QRCodePlaceholder
+                    {/* <QRCodePlaceholder
                       sessionCode={session.pairing_code}
                       size="lg"
-                    />
+                    /> */}
+                    <QRCodeDisplay value={connectionUrl} size={220} />
                     <p className="mt-3 text-sm text-muted-foreground">
                       スマホのカメラで読み取ると、リモコン画面に移動します。
                     </p>
