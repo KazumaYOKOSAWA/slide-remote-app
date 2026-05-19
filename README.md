@@ -1,4 +1,4 @@
-# Slide Remote Web
+# Slide Remote App
 
 スマホをPowerPointリモコンとして使うためのMVPアプリです。  
 PCで発表セッションを作成し、スマホでQRコードを読み取ることで、スマホからPowerPointの「次へ」「戻る」などを操作できます。
