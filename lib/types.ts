@@ -5,13 +5,23 @@ export type ConnectionStatus = "connected" | "waiting" | "disconnected";
 export type DesktopClientStatus = "connected" | "not_connected";
 
 // Remote command types
+// export type RemoteCommand =
+//   | "NEXT_SLIDE"
+//   | "PREV_SLIDE"
+//   | "START_PRESENTATION"
+//   | "END_PRESENTATION"
+//   | "BLACKOUT"
+//   | "WHITEOUT";
+
 export type RemoteCommand =
   | "NEXT_SLIDE"
   | "PREV_SLIDE"
   | "START_PRESENTATION"
   | "END_PRESENTATION"
   | "BLACKOUT"
-  | "WHITEOUT";
+  | "WHITEOUT"
+  | "POINTER_MOVE"
+  | "POINTER_CLICK";
 
 // User type
 export interface User {
@@ -52,6 +62,8 @@ export const COMMAND_LABELS: Record<RemoteCommand, string> = {
   END_PRESENTATION: "End Presentation",
   BLACKOUT: "Black Screen",
   WHITEOUT: "White Screen",
+  POINTER_MOVE: "pointer move",
+  POINTER_CLICK: "pointer click"
 };
 
 // Command display mapping Japanese
@@ -62,4 +74,6 @@ export const COMMAND_LABELS_JA: Record<RemoteCommand, string> = {
   END_PRESENTATION: "発表終了",
   BLACKOUT: "黒画面",
   WHITEOUT: "白画面",
+  POINTER_MOVE: "ポインター移動",
+  POINTER_CLICK: "ポインタークリック"
 };

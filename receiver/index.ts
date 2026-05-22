@@ -1,6 +1,7 @@
 import "dotenv/config";
 import { createClient } from "@supabase/supabase-js";
-import { keyboard, Key } from "@nut-tree-fork/nut-js";
+// import { keyboard, Key } from "@nut-tree-fork/nut-js";
+import { keyboard, Key, mouse, Button, Point } from "@nut-tree-fork/nut-js";
 
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
@@ -21,7 +22,22 @@ async function tapKey(key: Key) {
   await keyboard.releaseKey(key);
 }
 
-async function executeCommand(command: string) {
+async function movePointer(dx: number, dy: number) {
+  const sensitivity = 1.5;
+
+  const current = await mouse.getPosition();
+
+  await mouse.setPosition(
+    new Point(
+      Math.round(current.x + dx * sensitivity),
+      Math.round(current.y + dy * sensitivity)
+    )
+  );
+}
+
+
+// async function executeCommand(command: string) {
+async function executeCommand(command: string, payload?: any) {
   console.log("Execute:", command);
 
   switch (command) {
@@ -47,6 +63,13 @@ async function executeCommand(command: string) {
 
     case "WHITEOUT":
       await tapKey(Key.W);
+      break;
+    case "POINTER_MOVE":
+      await movePointer(Number(payload?.dx ?? 0), Number(payload?.dy ?? 0));
+      break;
+
+    case "POINTER_CLICK":
+      await mouse.click(Button.LEFT);
       break;
 
     default:
@@ -114,7 +137,8 @@ async function main() {
         console.log("Received command:", command);
 
         try {
-          await executeCommand(command);
+          // await executeCommand(command);
+          await executeCommand(command, payload.new.payload);
 
           const { error: updateError } = await supabase
             .from("commands")

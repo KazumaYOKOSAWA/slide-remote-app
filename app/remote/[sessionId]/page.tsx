@@ -1,11 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+// import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 import type { RemoteCommand } from "@/lib/types";
+
 
 type SessionRow = {
   id: string;
@@ -30,6 +32,9 @@ export default function RemotePage() {
 
   const [startTime] = useState(() => Date.now());
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
+
+  const lastTouchRef = useRef<{ x: number; y: number } | null>(null);
+  const lastSentAtRef = useRef(0);
 
   useEffect(() => {
     const timer = window.setInterval(() => {
@@ -113,6 +118,44 @@ export default function RemotePage() {
     setIsSending(false);
   };
 
+  const sendPointerMove = async (dx: number, dy: number) => {
+  if (!session || !token) return;
+
+  const now = Date.now();
+  if (now - lastSentAtRef.current < 60) return;
+  lastSentAtRef.current = now;
+
+  const supabase = createClient();
+
+  await supabase.from("commands").insert({
+    session_id: session.id,
+    command: "POINTER_MOVE",
+    payload: {
+      source: "mobile_pointer",
+      pairing_token: token,
+      dx,
+      dy,
+    },
+  });
+};
+
+const sendPointerClick = async () => {
+  if (!session || !token) return;
+
+  const supabase = createClient();
+
+  await supabase.from("commands").insert({
+    session_id: session.id,
+    command: "POINTER_CLICK",
+    payload: {
+      source: "mobile_pointer",
+      pairing_token: token,
+    },
+  });
+
+  setLastCommand("POINTER_CLICK");
+};
+
   if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-zinc-950 px-4 text-white">
@@ -174,6 +217,41 @@ export default function RemotePage() {
             className="h-56 w-full rounded-3xl text-4xl font-bold shadow-lg active:scale-[0.99]"
           >
             次へ
+          </Button>
+        </section>
+
+        <section className="mt-5 rounded-3xl border border-white/10 bg-white/5 p-4">
+          <div
+            className="flex h-48 touch-none select-none items-center justify-center rounded-2xl border border-white/10 bg-zinc-900 text-center text-sm text-zinc-400"
+            onTouchStart={(e) => {
+              const touch = e.touches[0];
+              lastTouchRef.current = { x: touch.clientX, y: touch.clientY };
+            }}
+            onTouchMove={(e) => {
+              const touch = e.touches[0];
+              const last = lastTouchRef.current;
+              if (!last) return;
+
+              const dx = touch.clientX - last.x;
+              const dy = touch.clientY - last.y;
+
+              lastTouchRef.current = { x: touch.clientX, y: touch.clientY };
+
+              sendPointerMove(dx, dy);
+            }}
+            onTouchEnd={() => {
+              lastTouchRef.current = null;
+            }}
+          >
+            指でなぞるとポインターを動かせます
+          </div>
+
+          <Button
+            variant="secondary"
+            className="mt-3 h-14 w-full rounded-2xl"
+            onClick={sendPointerClick}
+          >
+            クリック
           </Button>
         </section>
 
