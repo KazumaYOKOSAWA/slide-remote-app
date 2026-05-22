@@ -30,8 +30,20 @@ async function toggleLaserPointer() {
   await keyboard.releaseKey(Key.LeftControl);
 }
 
+// async function movePointer(dx: number, dy: number) {
+//   const sensitivity = 1.5;
+
+//   const current = await mouse.getPosition();
+
+//   await mouse.setPosition(
+//     new Point(
+//       Math.round(current.x + dx * sensitivity),
+//       Math.round(current.y + dy * sensitivity)
+//     )
+//   );
+// }
 async function movePointer(dx: number, dy: number) {
-  const sensitivity = 1.5;
+  const sensitivity = 3.5;
 
   const current = await mouse.getPosition();
 
@@ -42,7 +54,6 @@ async function movePointer(dx: number, dy: number) {
     )
   );
 }
-
 
 // async function executeCommand(command: string) {
 async function executeCommand(command: string, payload?: any) {

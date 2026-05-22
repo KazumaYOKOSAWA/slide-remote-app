@@ -37,6 +37,7 @@ export default function RemotePage() {
   const lastSentAtRef = useRef(0);
 
   const pointerChannelRef = useRef<any>(null);
+  
 
   useEffect(() => {
     if (!sessionId) return;
@@ -110,32 +111,32 @@ export default function RemotePage() {
   }, [elapsedSeconds]);
 
   const sendCommand = async (command: RemoteCommand) => {
-    if (!session || !token || isSending) return;
+  if (!session || !token || isSending) return;
 
-    setIsSending(true);
-    setErrorMessage("");
+  setIsSending(true);
+  setErrorMessage("");
 
-    const supabase = createClient();
+  const supabase = createClient();
 
-    const { error } = await supabase.from("commands").insert({
-      session_id: session.id,
-      command,
-      payload: {
-        source: "mobile_remote",
-        pairing_token: token,
-      },
-    });
+  const { error } = await supabase.from("commands").insert({
+    session_id: session.id,
+    command,
+    payload: {
+      source: "mobile_remote",
+      pairing_token: token,
+    },
+  });
 
-    if (error) {
-      console.error("remote command insert error:", error);
-      setErrorMessage("コマンド送信に失敗しました。");
-      setIsSending(false);
-      return;
-    }
-
-    setLastCommand(command);
+  if (error) {
+    console.error("remote command insert error:", error);
+    setErrorMessage("コマンド送信に失敗しました。");
     setIsSending(false);
-  };
+    return;
+  }
+
+  setLastCommand(command);
+  setIsSending(false);
+};
 
   const sendPointerMove = async (dx: number, dy: number) => {
   if (!pointerChannelRef.current) return;
@@ -285,6 +286,14 @@ const sendPointerClick = async () => {
           >
             クリック
           </Button>
+          <Button
+            variant="secondary"
+            className="mt-3 h-14 w-full rounded-2xl"
+            disabled={isSending}
+            onClick={() => sendCommand("POINTER_MODE")}
+          >
+          ポインターに切り替え
+        </Button>
         </section>
 
         <section className="mt-5 grid grid-cols-3 gap-3">
