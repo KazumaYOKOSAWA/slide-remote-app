@@ -76,12 +76,33 @@ export default function RemotePage() {
 
       const supabase = createClient();
 
-      const { data, error } = await supabase
-        .from("sessions")
-        .select("id, name, pairing_code, pairing_token, status")
-        .eq("id", sessionId)
-        .eq("pairing_token", token)
-        .single();
+      // const { data, error } = await supabase
+      //   .from("sessions")
+      //   .select("id, name, pairing_code, pairing_token, status")
+      //   .eq("id", sessionId)
+      //   .eq("pairing_token", token)
+      //   .single();
+      const { data, error } = await supabase.rpc("get_session_by_token", {
+        input_session_id: sessionId,
+        input_token: token,
+      });
+
+      const sessionData = Array.isArray(data) ? data[0] : data;
+
+      if (error || !sessionData) {
+        console.error("remote session fetch error:", error);
+        setErrorMessage(
+          "セッションが見つからないか、接続トークンが正しくありません。"
+        );
+        setSession(null);
+        setIsLoading(false);
+        return;
+      }
+
+      setSession({
+        ...sessionData,
+        pairing_token: token,
+      } as SessionRow);
 
       if (error || !data) {
         console.error("remote session fetch error:", error);
@@ -118,14 +139,22 @@ export default function RemotePage() {
 
   const supabase = createClient();
 
-  const { error } = await supabase.from("commands").insert({
-    session_id: session.id,
-    command,
-    payload: {
-      source: "mobile_remote",
-      pairing_token: token,
-    },
-  });
+  // const { error } = await supabase.from("commands").insert({
+  //   session_id: session.id,
+  //   command,
+  //   payload: {
+  //     source: "mobile_remote",
+  //     pairing_token: token,
+  //   },
+  // });
+  const { error } = await supabase.rpc("create_remote_command", {
+  input_session_id: session.id,
+  input_token: token,
+  input_command: command,
+  input_payload: {
+    source: "mobile_remote",
+  },
+});
 
   if (error) {
     console.error("remote command insert error:", error);
