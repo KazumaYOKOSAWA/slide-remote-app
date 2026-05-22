@@ -20,7 +20,7 @@ export type RemoteCommand =
   | "END_PRESENTATION"
   | "BLACKOUT"
   | "WHITEOUT"
-  | "POINTER_MOVE"
+  | "POINTER_MODE"
   | "POINTER_CLICK";
 
 // User type
@@ -62,8 +62,8 @@ export const COMMAND_LABELS: Record<RemoteCommand, string> = {
   END_PRESENTATION: "End Presentation",
   BLACKOUT: "Black Screen",
   WHITEOUT: "White Screen",
-  POINTER_MOVE: "pointer move",
-  POINTER_CLICK: "pointer click"
+  POINTER_MODE: "Pointer Mode",
+  POINTER_CLICK: "Pointer Click"
 };
 
 // Command display mapping Japanese
@@ -74,6 +74,6 @@ export const COMMAND_LABELS_JA: Record<RemoteCommand, string> = {
   END_PRESENTATION: "発表終了",
   BLACKOUT: "黒画面",
   WHITEOUT: "白画面",
-  POINTER_MOVE: "ポインター移動",
+  POINTER_MODE: "ポインター モード",
   POINTER_CLICK: "ポインタークリック"
 };

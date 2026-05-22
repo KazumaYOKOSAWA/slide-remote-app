@@ -36,6 +36,25 @@ export default function RemotePage() {
   const lastTouchRef = useRef<{ x: number; y: number } | null>(null);
   const lastSentAtRef = useRef(0);
 
+  const pointerChannelRef = useRef<any>(null);
+
+  useEffect(() => {
+    if (!sessionId) return;
+
+    const supabase = createClient();
+    const channel = supabase.channel(`pointer:${sessionId}`);
+
+    channel.subscribe((status) => {
+      console.log("pointer channel:", status);
+    });
+
+    pointerChannelRef.current = channel;
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [sessionId]);
+  
   useEffect(() => {
     const timer = window.setInterval(() => {
       setElapsedSeconds(Math.floor((Date.now() - startTime) / 1000));
@@ -119,38 +138,49 @@ export default function RemotePage() {
   };
 
   const sendPointerMove = async (dx: number, dy: number) => {
-  if (!session || !token) return;
+  if (!pointerChannelRef.current) return;
 
   const now = Date.now();
-  if (now - lastSentAtRef.current < 60) return;
+
+  // 送信頻度を少し上げる
+  if (now - lastSentAtRef.current < 25) return;
+
   lastSentAtRef.current = now;
 
-  const supabase = createClient();
-
-  await supabase.from("commands").insert({
-    session_id: session.id,
-    command: "POINTER_MOVE",
+  await pointerChannelRef.current.send({
+    type: "broadcast",
+    event: "pointer_move",
     payload: {
-      source: "mobile_pointer",
-      pairing_token: token,
       dx,
       dy,
     },
   });
 };
 
+// const sendPointerClick = async () => {
+//   if (!session || !token) return;
+
+//   const supabase = createClient();
+
+//   await supabase.from("commands").insert({
+//     session_id: session.id,
+//     command: "POINTER_CLICK",
+//     payload: {
+//       source: "mobile_pointer",
+//       pairing_token: token,
+//     },
+//   });
+
+//   setLastCommand("POINTER_CLICK");
+// };
+
 const sendPointerClick = async () => {
-  if (!session || !token) return;
+  if (!pointerChannelRef.current) return;
 
-  const supabase = createClient();
-
-  await supabase.from("commands").insert({
-    session_id: session.id,
-    command: "POINTER_CLICK",
-    payload: {
-      source: "mobile_pointer",
-      pairing_token: token,
-    },
+  await pointerChannelRef.current.send({
+    type: "broadcast",
+    event: "pointer_click",
+    payload: {},
   });
 
   setLastCommand("POINTER_CLICK");
@@ -227,7 +257,9 @@ const sendPointerClick = async () => {
               const touch = e.touches[0];
               lastTouchRef.current = { x: touch.clientX, y: touch.clientY };
             }}
+            // onTouchMove={(e) => {
             onTouchMove={(e) => {
+              e.preventDefault();
               const touch = e.touches[0];
               const last = lastTouchRef.current;
               if (!last) return;
