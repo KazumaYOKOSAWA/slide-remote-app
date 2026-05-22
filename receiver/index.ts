@@ -129,93 +129,150 @@ async function main() {
   console.log("Initial commands:", data);
   console.log("Initial fetch error:", error);
 
-  supabase
-    .channel(`commands:${sessionId}`)
-    
-    .on(
-      "postgres_changes",
-      {
-        event: "INSERT",
-        schema: "public",
-        table: "commands",
-      },
-      async (payload) => {
-        const payloadSessionId = payload.new.session_id as string;
-        const command = payload.new.command as string;
+  const commandsChannel = supabase
+  .channel(`commands:${sessionId}`)
+  .on(
+    "postgres_changes",
+    {
+      event: "INSERT",
+      schema: "public",
+      table: "commands",
+    },
+    async (payload) => {
+      const payloadSessionId = payload.new.session_id as string;
+      const command = payload.new.command as string;
 
-        if (payloadSessionId !== sessionId) {
+      if (payloadSessionId !== sessionId) {
+        return;
+      }
+
+      console.log("Received command:", command);
+
+      try {
+        await executeCommand(command, payload.new.payload);
+
+        const { error: updateError } = await supabase
+          .from("commands")
+          .update({ executed_at: new Date().toISOString() })
+          .eq("id", payload.new.id);
+
+        if (updateError) {
+          console.error("executed_at update error:", updateError);
           return;
         }
 
-        console.log("Received command:", command);
-
-        try {
-          // await executeCommand(command);
-          await executeCommand(command, payload.new.payload);
-
-          const { error: updateError } = await supabase
-            .from("commands")
-            .update({ executed_at: new Date().toISOString() })
-            .eq("id", payload.new.id);
-
-          if (updateError) {
-            console.error("executed_at update error:", updateError);
-            return;
-          }
-
-          console.log("Executed:", command);
-        } catch (error) {
-          console.error("Failed to execute command:", error);
-        }
+        console.log("Executed:", command);
+      } catch (error) {
+        console.error("Failed to execute command:", error);
       }
-    )
-    .subscribe((status) => {
-      console.log("Subscription status:", status);
-    });
+    }
+  )
+  .subscribe((status) => {
+    console.log("Commands channel status:", status);
+  });
 
-    supabase
-    .channel(`commands:${sessionId}`)
+const pointerChannel = supabase
+  .channel(`pointer:${sessionId}`)
+  .on("broadcast", { event: "pointer_move" }, async ({ payload }) => {
+    const dx = Number(payload?.dx ?? 0);
+    const dy = Number(payload?.dy ?? 0);
+
+    await movePointer(dx, dy);
+  })
+  .on("broadcast", { event: "pointer_click" }, async () => {
+    await mouse.click(Button.LEFT);
+  })
+  .subscribe((status) => {
+    console.log("Pointer channel status:", status);
+  });
+  
+  // supabase
+  //   .channel(`commands:${sessionId}`)
     
-    .on(
-      "postgres_changes",
-      {
-        event: "INSERT",
-        schema: "public",
-        table: "commands",
-      },
-      async (payload) => {
-        const payloadSessionId = payload.new.session_id as string;
-        const command = payload.new.command as string;
+  //   .on(
+  //     "postgres_changes",
+  //     {
+  //       event: "INSERT",
+  //       schema: "public",
+  //       table: "commands",
+  //     },
+  //     async (payload) => {
+  //       const payloadSessionId = payload.new.session_id as string;
+  //       const command = payload.new.command as string;
 
-        if (payloadSessionId !== sessionId) {
-          return;
-        }
+  //       if (payloadSessionId !== sessionId) {
+  //         return;
+  //       }
 
-        console.log("Received command:", command);
+  //       console.log("Received command:", command);
 
-        try {
-          // await executeCommand(command);
-          await executeCommand(command, payload.new.payload);
+  //       try {
+  //         // await executeCommand(command);
+  //         await executeCommand(command, payload.new.payload);
 
-          const { error: updateError } = await supabase
-            .from("commands")
-            .update({ executed_at: new Date().toISOString() })
-            .eq("id", payload.new.id);
+  //         const { error: updateError } = await supabase
+  //           .from("commands")
+  //           .update({ executed_at: new Date().toISOString() })
+  //           .eq("id", payload.new.id);
 
-          if (updateError) {
-            console.error("executed_at update error:", updateError);
-            return;
-          }
+  //         if (updateError) {
+  //           console.error("executed_at update error:", updateError);
+  //           return;
+  //         }
 
-          console.log("Executed:", command);
-        } catch (error) {
-          console.error("Failed to execute command:", error);
-        }
-      }
-    )
-    .subscribe((status) => {
-      console.log("Subscription status:", status);
-    });
+  //         console.log("Executed:", command);
+  //       } catch (error) {
+  //         console.error("Failed to execute command:", error);
+  //       }
+  //     }
+  //   )
+  //   .subscribe((status) => {
+  //     console.log("Subscription status:", status);
+  //   });
+
+  //   supabase
+  //   .channel(`commands:${sessionId}`)
+    
+  //   .on(
+  //     "postgres_changes",
+  //     {
+  //       event: "INSERT",
+  //       schema: "public",
+  //       table: "commands",
+  //     },
+  //     async (payload) => {
+  //       const payloadSessionId = payload.new.session_id as string;
+  //       const command = payload.new.command as string;
+
+  //       if (payloadSessionId !== sessionId) {
+  //         return;
+  //       }
+
+  //       console.log("Received command:", command);
+
+  //       try {
+  //         // await executeCommand(command);
+  //         await executeCommand(command, payload.new.payload);
+
+  //         const { error: updateError } = await supabase
+  //           .from("commands")
+  //           .update({ executed_at: new Date().toISOString() })
+  //           .eq("id", payload.new.id);
+
+  //         if (updateError) {
+  //           console.error("executed_at update error:", updateError);
+  //           return;
+  //         }
+
+  //         console.log("Executed:", command);
+  //       } catch (error) {
+  //         console.error("Failed to execute command:", error);
+  //       }
+  //     }
+  //   )
+  //   .subscribe((status) => {
+  //     console.log("Subscription status:", status);
+  //   });
 }
 
 main().catch((error) => {
