@@ -66,57 +66,43 @@ export default function RemotePage() {
 
   useEffect(() => {
     const fetchSession = async () => {
-      if (!sessionId || !token) {
-        setErrorMessage(
-          "接続情報が不足しています。PC画面のQRコードを読み取り直してください。"
-        );
-        setIsLoading(false);
-        return;
-      }
+  if (!sessionId || !token) {
+    setErrorMessage(
+      "接続情報が不足しています。PC画面のQRコードを読み取り直してください。"
+    );
+    setIsLoading(false);
+    return;
+  }
 
-      const supabase = createClient();
+  const supabase = createClient();
 
-      // const { data, error } = await supabase
-      //   .from("sessions")
-      //   .select("id, name, pairing_code, pairing_token, status")
-      //   .eq("id", sessionId)
-      //   .eq("pairing_token", token)
-      //   .single();
-      const { data, error } = await supabase.rpc("get_session_by_token", {
-        input_session_id: sessionId,
-        input_token: token,
-      });
+  const { data, error } = await supabase.rpc("get_session_by_token", {
+    input_session_id: sessionId,
+    input_token: token,
+  });
 
-      const sessionData = Array.isArray(data) ? data[0] : data;
+  const sessionData = Array.isArray(data) ? data[0] : data;
 
-      if (error || !sessionData) {
-        console.error("remote session fetch error:", error);
-        setErrorMessage(
-          "セッションが見つからないか、接続トークンが正しくありません。"
-        );
-        setSession(null);
-        setIsLoading(false);
-        return;
-      }
+  if (error || !sessionData) {
+    console.error("remote session fetch error:", error);
+    setErrorMessage(
+      "セッションが見つからないか、接続トークンが正しくありません。"
+    );
+    setSession(null);
+    setIsLoading(false);
+    return;
+  }
 
-      setSession({
-        ...sessionData,
-        pairing_token: token,
-      } as SessionRow);
+  setSession({
+    id: sessionData.id,
+    name: sessionData.name,
+    pairing_code: sessionData.pairing_code,
+    pairing_token: token,
+    status: sessionData.status,
+  });
 
-      if (error || !data) {
-        console.error("remote session fetch error:", error);
-        setErrorMessage(
-          "セッションが見つからないか、接続トークンが正しくありません。"
-        );
-        setSession(null);
-        setIsLoading(false);
-        return;
-      }
-
-      setSession(data as SessionRow);
-      setIsLoading(false);
-    };
+  setIsLoading(false);
+};
 
     fetchSession();
   }, [sessionId, token]);
