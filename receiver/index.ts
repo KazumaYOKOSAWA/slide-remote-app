@@ -99,6 +99,13 @@ async function executeCommand(command: string, payload?: any) {
       await toggleLaserPointer();
       break;
 
+    case "START_FROM_CURRENT_SLIDE":
+      await keyboard.pressKey(Key.LeftShift);
+      await keyboard.pressKey(Key.F5);
+      await keyboard.releaseKey(Key.F5);
+      await keyboard.releaseKey(Key.LeftShift);
+      break;
+
     default:
       console.warn("Unknown command:", command);
       return;

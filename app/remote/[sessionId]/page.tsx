@@ -233,143 +233,158 @@ const sendPointerClick = async () => {
   return (
     <div className="flex min-h-screen flex-col bg-zinc-950 text-white">
       <main className="flex flex-1 flex-col px-4 py-5">
-        <header className="mb-5 rounded-2xl border border-white/10 bg-white/5 p-4">
-          <div className="flex items-center justify-between gap-3">
-            <div className="min-w-0">
-              <p className="text-xs text-zinc-400">接続中</p>
-              <h1 className="mt-1 truncate text-base font-semibold">
-                {session.name}
-              </h1>
-            </div>
+  <header className="mb-4 rounded-3xl border border-white/10 bg-white/5 p-4">
+    <div className="flex items-center justify-between gap-3">
+      <div className="min-w-0">
+        <p className="text-xs text-zinc-400">接続中</p>
+        <h1 className="mt-1 truncate text-lg font-semibold">
+          {session.name}
+        </h1>
+      </div>
 
-            <div className="shrink-0 text-right">
-              <p className="text-xs text-zinc-400">Time</p>
-              <p className="mt-1 font-mono text-lg font-bold">
-                {elapsedLabel}
-              </p>
-            </div>
-          </div>
+      <div className="shrink-0 text-right">
+        <p className="text-xs text-zinc-400">Time</p>
+        <p className="mt-1 font-mono text-xl font-bold">{elapsedLabel}</p>
+      </div>
+    </div>
 
-          <div className="mt-3 flex items-center justify-between text-xs text-zinc-400">
-            <span>Code: {session.pairing_code}</span>
-            <span>{isSending ? "送信中..." : "Ready"}</span>
-          </div>
-        </header>
+    <div className="mt-3 flex items-center justify-between text-xs text-zinc-400">
+      <span>Code: {session.pairing_code}</span>
+      <span>{isSending ? "送信中..." : "Ready"}</span>
+    </div>
+  </header>
 
-        <section className="flex flex-1 items-center">
-          <Button
-            onClick={() => sendCommand("NEXT_SLIDE")}
-            disabled={isSending}
-            className="h-56 w-full rounded-3xl text-4xl font-bold shadow-lg active:scale-[0.99]"
-          >
-            次へ
-          </Button>
-        </section>
+  <section className="grid grid-cols-2 gap-3">
+    <Button
+      variant="secondary"
+      className="h-16 rounded-2xl text-sm"
+      disabled={isSending}
+      onClick={() => sendCommand("START_PRESENTATION")}
+    >
+      最初から開始
+    </Button>
 
-        <section className="mt-5 rounded-3xl border border-white/10 bg-white/5 p-4">
-          <div
-            className="flex h-48 touch-none select-none items-center justify-center rounded-2xl border border-white/10 bg-zinc-900 text-center text-sm text-zinc-400"
-            onTouchStart={(e) => {
-              const touch = e.touches[0];
-              lastTouchRef.current = { x: touch.clientX, y: touch.clientY };
-            }}
-            // onTouchMove={(e) => {
-            onTouchMove={(e) => {
-              e.preventDefault();
-              const touch = e.touches[0];
-              const last = lastTouchRef.current;
-              if (!last) return;
+    <Button
+      variant="secondary"
+      className="h-16 rounded-2xl text-sm"
+      disabled={isSending}
+      onClick={() => sendCommand("START_FROM_CURRENT_SLIDE")}
+    >
+      現在のスライドから
+    </Button>
+  </section>
 
-              const dx = touch.clientX - last.x;
-              const dy = touch.clientY - last.y;
+  <section className="mt-4 grid flex-1 grid-cols-[0.8fr_1.2fr] gap-3">
+    <Button
+      variant="secondary"
+      className="h-full min-h-48 rounded-3xl text-2xl font-bold"
+      disabled={isSending}
+      onClick={() => sendCommand("PREV_SLIDE")}
+    >
+      戻る
+    </Button>
 
-              lastTouchRef.current = { x: touch.clientX, y: touch.clientY };
+    <Button
+      className="h-full min-h-48 rounded-3xl text-4xl font-bold shadow-lg active:scale-[0.99]"
+      disabled={isSending}
+      onClick={() => sendCommand("NEXT_SLIDE")}
+    >
+      次へ
+    </Button>
+  </section>
 
-              sendPointerMove(dx, dy);
-            }}
-            onTouchEnd={() => {
-              lastTouchRef.current = null;
-            }}
-          >
-            指でなぞるとポインターを動かせます
-          </div>
+  <section className="mt-4 rounded-3xl border border-white/10 bg-white/5 p-4">
+    <div className="mb-3 flex items-center justify-between">
+      <div>
+        <p className="text-sm font-medium text-white">ポインター操作</p>
+        <p className="text-xs text-zinc-400">指でなぞって移動</p>
+      </div>
 
-          <Button
-            variant="secondary"
-            className="mt-3 h-14 w-full rounded-2xl"
-            onClick={sendPointerClick}
-          >
-            クリック
-          </Button>
-          <Button
-            variant="secondary"
-            className="mt-3 h-14 w-full rounded-2xl"
-            disabled={isSending}
-            onClick={() => sendCommand("POINTER_MODE")}
-          >
-          ポインターに切り替え
-        </Button>
-        </section>
+      <Button
+        variant="secondary"
+        size="sm"
+        disabled={isSending}
+        onClick={() => sendCommand("POINTER_MODE")}
+      >
+        切替
+      </Button>
+    </div>
 
-        <section className="mt-5 grid grid-cols-3 gap-3">
-          <Button
-            variant="secondary"
-            className="h-20 rounded-2xl text-base"
-            disabled={isSending}
-            onClick={() => sendCommand("PREV_SLIDE")}
-          >
-            戻る
-          </Button>
+    <div
+      className="flex h-40 touch-none select-none items-center justify-center rounded-2xl border border-white/10 bg-zinc-900 text-center text-sm text-zinc-400"
+      onTouchStart={(e) => {
+        const touch = e.touches[0];
+        lastTouchRef.current = { x: touch.clientX, y: touch.clientY };
+      }}
+      onTouchMove={(e) => {
+        e.preventDefault();
 
-          <Button
-            variant="secondary"
-            className="h-20 rounded-2xl text-base"
-            disabled={isSending}
-            onClick={() => sendCommand("BLACKOUT")}
-          >
-            黒画面
-          </Button>
+        const touch = e.touches[0];
+        const last = lastTouchRef.current;
+        if (!last) return;
 
-          <Button
-            variant="secondary"
-            className="h-20 rounded-2xl text-base"
-            disabled={isSending}
-            onClick={() => sendCommand("END_PRESENTATION")}
-          >
-            終了
-          </Button>
-        </section>
+        const dx = touch.clientX - last.x;
+        const dy = touch.clientY - last.y;
 
-        <section className="mt-3 grid grid-cols-2 gap-3">
-          <Button
-            variant="outline"
-            className="h-14 rounded-2xl border-white/20 bg-transparent text-white hover:bg-white/10 hover:text-white"
-            disabled={isSending}
-            onClick={() => sendCommand("START_PRESENTATION")}
-          >
-            発表開始
-          </Button>
+        lastTouchRef.current = { x: touch.clientX, y: touch.clientY };
 
-          <Button
-            variant="outline"
-            className="h-14 rounded-2xl border-white/20 bg-transparent text-white hover:bg-white/10 hover:text-white"
-            disabled={isSending}
-            onClick={() => sendCommand("WHITEOUT")}
-          >
-            白画面
-          </Button>
-        </section>
+        sendPointerMove(dx, dy);
+      }}
+      onTouchEnd={() => {
+        lastTouchRef.current = null;
+      }}
+    >
+      ここを指でなぞる
+    </div>
 
-        <footer className="mt-4 min-h-10 text-center text-xs text-zinc-500">
-          {lastCommand ? (
-            <p>最後に送信: {lastCommand}</p>
-          ) : (
-            <p>ボタンを押すとPowerPoint操作コマンドを送信します</p>
-          )}
+    <Button
+      variant="secondary"
+      className="mt-3 h-12 w-full rounded-2xl"
+      onClick={sendPointerClick}
+    >
+      クリック
+    </Button>
+  </section>
 
-          {errorMessage && <p className="mt-2 text-red-400">{errorMessage}</p>}
-        </footer>
-      </main>
+  <section className="mt-4 grid grid-cols-3 gap-3">
+    <Button
+      variant="outline"
+      className="h-14 rounded-2xl border-white/20 bg-transparent text-white hover:bg-white/10 hover:text-white"
+      disabled={isSending}
+      onClick={() => sendCommand("BLACKOUT")}
+    >
+      黒画面
+    </Button>
+
+    <Button
+      variant="outline"
+      className="h-14 rounded-2xl border-white/20 bg-transparent text-white hover:bg-white/10 hover:text-white"
+      disabled={isSending}
+      onClick={() => sendCommand("WHITEOUT")}
+    >
+      白画面
+    </Button>
+
+    <Button
+      variant="outline"
+      className="h-14 rounded-2xl border-white/20 bg-transparent text-white hover:bg-white/10 hover:text-white"
+      disabled={isSending}
+      onClick={() => sendCommand("END_PRESENTATION")}
+    >
+      終了
+    </Button>
+  </section>
+
+  <footer className="mt-4 min-h-8 text-center text-xs text-zinc-500">
+    {lastCommand ? (
+      <p>最後に送信: {lastCommand}</p>
+    ) : (
+      <p>PowerPointを操作できます</p>
+    )}
+
+    {errorMessage && <p className="mt-2 text-red-400">{errorMessage}</p>}
+  </footer>
+</main>
     </div>
   );
 }

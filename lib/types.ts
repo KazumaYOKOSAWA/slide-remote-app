@@ -21,7 +21,8 @@ export type RemoteCommand =
   | "BLACKOUT"
   | "WHITEOUT"
   | "POINTER_MODE"
-  | "POINTER_CLICK";
+  | "POINTER_CLICK"
+  | "START_FROM_CURRENT_SLIDE";
 
 // User type
 export interface User {
@@ -59,6 +60,7 @@ export const COMMAND_LABELS: Record<RemoteCommand, string> = {
   NEXT_SLIDE: "Next Slide",
   PREV_SLIDE: "Previous Slide",
   START_PRESENTATION: "Start Presentation",
+  START_FROM_CURRENT_SLIDE: "Start from Current Slide",
   END_PRESENTATION: "End Presentation",
   BLACKOUT: "Black Screen",
   WHITEOUT: "White Screen",
@@ -71,6 +73,7 @@ export const COMMAND_LABELS_JA: Record<RemoteCommand, string> = {
   NEXT_SLIDE: "次へ",
   PREV_SLIDE: "戻る",
   START_PRESENTATION: "発表開始",
+  START_FROM_CURRENT_SLIDE: "現在のスライドから開始",
   END_PRESENTATION: "発表終了",
   BLACKOUT: "黒画面",
   WHITEOUT: "白画面",
